@@ -1,4 +1,4 @@
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum Opcode {
     LOAD,
     ADD,
@@ -17,6 +17,7 @@ pub enum Opcode {
     GTQ,
     LTQ,
     JEQ
+}
 
   impl From<u8> for Opcode {
     fn from(v: u8) -> Self {
@@ -41,7 +42,6 @@ pub enum Opcode {
         }
     }
   }
-}
 
 #[derive(Debug, PartialEq)]
 pub struct Instruction {
