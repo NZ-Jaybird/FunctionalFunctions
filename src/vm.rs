@@ -1,4 +1,4 @@
-use std::num::ParseIntError;
+//use std::num::ParseIntError;
 
 use crate::instruction::Opcode;
 
@@ -25,7 +25,7 @@ impl VM {
     pub fn run(&mut self) {
         let mut is_done = false;
         while !is_done {
-            is_done = self.execute_instruction();
+            is_done = !self.execute_instruction();
         }
     }
 
@@ -137,7 +137,8 @@ impl VM {
                 return false;
             },
             Opcode::IGL => {
-
+                println!("Illegal instruction encountered");
+                return false;
             }
         }
         true
@@ -145,6 +146,7 @@ impl VM {
 
     fn decode_opcode(&mut self) -> Opcode {
         let opcode = Opcode::from(self.program[self.pc]);
+        println!("opcode: {:?}", opcode);
         self.pc += 1;
         return opcode;
     }
@@ -161,7 +163,7 @@ impl VM {
         return result;
     }
 
-    fn parse_hex(&mut self, i: &str) -> Result<Vec<u8>, ParseIntError>{
+    /*fn parse_hex(&mut self, i: &str) -> Result<Vec<u8>, ParseIntError>{
         let split = i.split(" ").collect::<Vec<&str>>();
         let mut results: Vec<u8> = vec![];
         for hex_string in split {
@@ -176,7 +178,7 @@ impl VM {
             }
         }
         Ok(results)
-    }
+    }*/
 
     pub fn get_test_vm() -> VM {
         let mut test_vm = VM::new();
@@ -254,7 +256,7 @@ mod tests {
         let mut test_vm = VM::get_test_vm();
         test_vm.registers[0] = 10;
         test_vm.registers[1] = 10;
-        test_vm.program = vec![9, 0, 1, 0, 10, 0, 1, 0];
+        test_vm.program = vec![9, 0, 1, 0, 9, 0, 1, 0];
         test_vm.run_once();
         assert_eq!(test_vm.equal_flag, true);
         test_vm.registers[1] = 20;
@@ -267,7 +269,7 @@ mod tests {
         let mut test_vm = VM::get_test_vm();
         test_vm.registers[0] = 10;
         test_vm.registers[1] = 10;
-        test_vm.program = vec![10, 0, 1, 0, 10, 0, 1, 0];
+        test_vm.program = vec![10, 0, 1, 0, 10, 0, 1, 0, 10, 0, 1, 0];
         test_vm.run_once();
         assert_eq!(test_vm.equal_flag, false);
         test_vm.registers[1] = 20;
@@ -280,7 +282,7 @@ mod tests {
         let mut test_vm = VM::get_test_vm();
         test_vm.registers[0] = 10;
         test_vm.registers[1] = 10;
-        test_vm.program = vec![11, 0, 1, 0, 10, 0, 1, 0];
+        test_vm.program = vec![11, 0, 1, 0, 11, 0, 1, 0, 11, 0, 1, 0];
         test_vm.run_once();
         assert_eq!(test_vm.equal_flag, false);
         test_vm.registers[1] = 20;
@@ -296,7 +298,7 @@ mod tests {
         let mut test_vm = VM::get_test_vm();
         test_vm.registers[0] = 10;
         test_vm.registers[1] = 10;
-        test_vm.program = vec![12, 0, 1, 0, 10, 0, 1, 0];
+        test_vm.program = vec![12, 0, 1, 0, 12, 0, 1, 0, 12, 0, 1, 0];
         test_vm.run_once();
         assert_eq!(test_vm.equal_flag, false);
         test_vm.registers[1] = 20;
@@ -312,7 +314,7 @@ mod tests {
         let mut test_vm = VM::get_test_vm();
         test_vm.registers[0] = 10;
         test_vm.registers[1] = 10;
-        test_vm.program = vec![13, 0, 1, 0, 10, 0, 1, 0];
+        test_vm.program = vec![13, 0, 1, 0, 13, 0, 1, 0, 13, 0, 1, 0];
         test_vm.run_once();
         assert_eq!(test_vm.equal_flag, true);
         test_vm.registers[1] = 20;
@@ -328,7 +330,7 @@ mod tests {
         let mut test_vm = VM::get_test_vm();
         test_vm.registers[0] = 10;
         test_vm.registers[1] = 10;
-        test_vm.program = vec![14, 0, 1, 0, 10, 0, 1, 0];
+        test_vm.program = vec![14, 0, 1, 0, 14, 0, 1, 0, 14, 0, 1, 0];
         test_vm.run_once();
         assert_eq!(test_vm.equal_flag, true);
         test_vm.registers[1] = 20;
@@ -344,7 +346,7 @@ mod tests {
         let mut test_vm = VM::get_test_vm();
         test_vm.registers[0] = 7;
         test_vm.equal_flag = true;
-        test_vm.program = vec![15, 0, 0, 0, 17, 0, 0, 0, 17, 0, 0, 0];
+        test_vm.program = vec![15, 0, 0, 0];
         test_vm.run_once();
         assert_eq!(test_vm.pc, 7);
     }

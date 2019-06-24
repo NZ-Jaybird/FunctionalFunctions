@@ -1,5 +1,5 @@
 [package]
-name = "functionalFunctions"
+name = "functional_functions"
 version = "0.1.0"
 authors = ["Jonathan Smith <nz.jaybird@gmail.com>"]
 edition = "2018"

@@ -7,10 +7,10 @@ pub enum Opcode {
     DIV,
     HLT,
     JMP,
-    JMPF,
+    JMPF, // 7
     JMPB,
     IGL,
-    EQ,
+    EQ, // 9
     NEQ,
     GT,
     LT,
