@@ -1,11 +1,9 @@
-//use std::num::ParseIntError;
-
 use crate::instruction::Opcode;
 
 pub struct VM {
-    registers: [i32; 32],
+    pub registers: [i32; 32],
     pc: usize,
-    program: Vec<u8>,
+    pub program: Vec<u8>,
     remainder: u32,
     equal_flag: bool,
 }
@@ -34,23 +32,15 @@ impl VM {
         self.execute_instruction();
     }
 
+    pub fn add_byte(&mut self, b: u8) {
+        self.program.push(b);
+    }
+
     fn execute_instruction(&mut self) -> bool {
         if self.pc >= self.program.len() {
             return false;
         }
         match self.decode_opcode() {
-/*            ".registers" => {
-                println!("Listing registers and all contents:");
-                println!("{:#?}", self.registers);
-                println!("End of Register Listing")
-            },
-            ".program" => {
-                println!("Listing instructions currently in VM's program vector:");
-                for instruction in &self.program {
-                    println!("{}", instruction);
-                }
-                println!("End of Program Listing");
-            },*/
             Opcode::JEQ => {
                 let register = self.next_8_bits() as usize;
                 let target = self.registers[register];
@@ -162,23 +152,6 @@ impl VM {
         self.pc += 2;
         return result;
     }
-
-    /*fn parse_hex(&mut self, i: &str) -> Result<Vec<u8>, ParseIntError>{
-        let split = i.split(" ").collect::<Vec<&str>>();
-        let mut results: Vec<u8> = vec![];
-        for hex_string in split {
-            let byte = u8::from_str_radix(&hex_string, 16);
-            match byte {
-                Ok(result) => {
-                    results.push(result);
-                },
-                Err(e) => {
-                    return Err(e);
-                }
-            }
-        }
-        Ok(results)
-    }*/
 
     pub fn get_test_vm() -> VM {
         let mut test_vm = VM::new();
