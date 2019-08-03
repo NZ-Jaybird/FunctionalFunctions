@@ -3,6 +3,8 @@ use std;
 use std::io;
 use std::io::Write;
 use std::num::ParseIntError;
+use nom::types::CompleteStr;
+use crate::assembler::program_parsers::*;
 
 /// Core structure for the REPL for the Assembler
 pub struct REPL {
@@ -84,8 +86,17 @@ impl REPL {
                     }
                 }
                 _ => {
-                    let results = self.parse_hex(buffer);
-                    match results {
+                    let parsed_program = program(CompleteStr(buffer));
+                    if parsed_program.is_ok() {
+                        let (_, result) = parsed_program.unwrap();
+                        let bytecode = result.to_bytes();
+                        // TODO: Make a function to let us add bytes to the VM
+                        for byte in bytecode {
+                            self.vm.add_byte(byte);
+                        }
+                    } else {
+                        let results = self.parse_hex(buffer);
+                        match results {
                         Ok(bytes) => {
                             for byte in bytes {
                                 self.vm.add_byte(byte)
@@ -95,6 +106,7 @@ impl REPL {
                             println!("Unable to decode hex string. Please enter 4 groups of 2 hex characters.")
                         }
                     };
+                    }
                     self.vm.run_once();
                 }
             }

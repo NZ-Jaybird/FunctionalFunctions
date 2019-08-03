@@ -136,7 +136,7 @@ impl VM {
 
     fn decode_opcode(&mut self) -> Opcode {
         let opcode = Opcode::from(self.program[self.pc]);
-        println!("opcode: {:?}", opcode);
+        println!("opcode ({:?}): {:?}", self.program[self.pc], opcode);
         self.pc += 1;
         return opcode;
     }
@@ -174,7 +174,7 @@ mod tests {
     #[test]
     fn test_opcode_hlt() {
       let mut test_vm = VM::new();
-      let test_bytes = vec![0,0,0,0];
+      let test_bytes = vec![5,0,0,0];
       test_vm.program = test_bytes;
       test_vm.run();
       assert_eq!(test_vm.pc, 1);
@@ -192,7 +192,7 @@ mod tests {
     #[test]
     fn test_load_opcode() {
         let mut test_vm = VM::get_test_vm();
-        test_vm.program = vec![1, 0, 1, 244]; // Remember, this is how we represent 500 using two u8s in little endian format
+        test_vm.program = vec![0, 0, 1, 244]; // Remember, this is how we represent 500 using two u8s in little endian format
         test_vm.run();
         assert_eq!(test_vm.registers[0], 500);
     }
