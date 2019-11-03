@@ -1,15 +1,22 @@
 use crate::assembler::Token;
 use crate::instruction::Opcode;
 use nom::types::CompleteStr;
+use nom::*;
 
-named!(pub opcode_load<CompleteStr, Token>, do_parse!(
-      tag!("load") >> (Token::Op{code: Opcode::LOAD})
+named!(pub opcode<CompleteStr, Token>,
+  do_parse!(
+      opcode: alpha1 >>
+      (
+        {
+            Token::Op{code: Opcode::from(opcode)}
+        }
+      )
   )
 );
 
 #[cfg(test)]
 mod tests {
-    use super::opcode_load;
+    use super::opcode;
     use super::CompleteStr;
     use super::Opcode;
     use super::Token;
@@ -17,14 +24,15 @@ mod tests {
     #[test]
     fn test_opcode_load() {
         // First tests that the opcode is detected and parsed correctly
-        let result = opcode_load(CompleteStr("load"));
+        let result = opcode(CompleteStr("load"));
         assert_eq!(result.is_ok(), true);
         let (rest, token) = result.unwrap();
         assert_eq!(token, Token::Op { code: Opcode::LOAD });
         assert_eq!(rest, CompleteStr(""));
 
         // Tests that an invalid opcode isn't recognized
-        let result = opcode_load(CompleteStr("aold"));
-        assert_eq!(result.is_ok(), false);
+        let result = opcode(CompleteStr("aold"));
+        let (_, token) = result.unwrap();
+        assert_eq!(token, Token::Op { code: Opcode::IGL });
     }
 }
