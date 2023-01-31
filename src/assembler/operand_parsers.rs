@@ -3,8 +3,8 @@ use nom::digit;
 
 use crate::assembler::Token;
 
-/// Parser for integer numbers, which we preface with `#` in our assembly language:
-/// #100
+// Parser for integer numbers, which we preface with `#` in our assembly language:
+// #100
 named!(pub integer_operand<CompleteStr, Token>,
     ws!(
         do_parse!(

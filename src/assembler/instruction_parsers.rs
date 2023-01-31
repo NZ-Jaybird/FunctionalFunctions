@@ -13,8 +13,8 @@ pub struct AssemblerInstruction {
     operand3: Option<Token>,
 }
 
-/// Handles instructions of the following form:
-/// LOAD $0 #100
+// Handles instructions of the following form:
+// LOAD $0 #100
 named!(instruction_one<CompleteStr, AssemblerInstruction>,
     do_parse!(
         o: opcode >>
@@ -63,7 +63,7 @@ named!(instruction_three<CompleteStr, AssemblerInstruction>,
     )
 );
 
-/// Will try to parse out any of the Instruction forms
+// Will try to parse out any of the Instruction forms
 named!(pub instruction<CompleteStr, AssemblerInstruction>,
     do_parse!(
         ins: alt!(
@@ -143,23 +143,23 @@ mod tests {
     }
 
     #[test]
-fn test_parse_instruction_form_two() {
-    let result = instruction_two(CompleteStr("hlt\n"));
-    assert_eq!(
-        result,
-        Ok((
-            CompleteStr(""),
-            AssemblerInstruction {
-                opcode: Token::Op { code: Opcode::HLT },
-                operand1: None,
-                operand2: None,
-                operand3: None
-            }
-        ))
-    );
-}
+    fn test_parse_instruction_form_two() {
+        let result = instruction_two(CompleteStr("hlt\n"));
+        assert_eq!(
+            result,
+            Ok((
+                CompleteStr(""),
+                AssemblerInstruction {
+                    opcode: Token::Op { code: Opcode::HLT },
+                    operand1: None,
+                    operand2: None,
+                    operand3: None
+                }
+            ))
+        );
+    }
 
-#[test]
+    #[test]
     fn test_parse_instruction_form_three() {
         let result = instruction_three(CompleteStr("add $0 $1 $2\n"));
         assert_eq!(

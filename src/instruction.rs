@@ -19,6 +19,7 @@ pub enum Opcode {
   GTQ,
   LTQ,
   JEQ,
+  ALOC
 }
 
 impl From<u8> for Opcode {
@@ -40,6 +41,7 @@ impl From<u8> for Opcode {
       13 => return Opcode::GTQ,
       14 => return Opcode::LTQ,
       15 => return Opcode::JEQ,
+      16 => return Opcode::ALOC,
       _ => return Opcode::IGL,
     }
   }
@@ -64,6 +66,7 @@ impl<'a> From<CompleteStr<'a>> for Opcode {
       CompleteStr("lte") => Opcode::LTQ,
       CompleteStr("lt") => Opcode::LT,
       CompleteStr("jmpe") => Opcode::JEQ,
+      CompleteStr("aloc") => Opcode::ALOC,
       _ => Opcode::IGL,
     }
   }
@@ -82,25 +85,25 @@ impl Instruction {
 
 #[cfg(test)]
 mod tests {
-  use super::*;
+    use super::*;
 
-  #[test]
-  fn test_create_hlt() {
-    let opcode = Opcode::HLT;
-    assert_eq!(opcode, Opcode::HLT);
-  }
+    #[test]
+    fn test_create_hlt() {
+        let opcode = Opcode::HLT;
+        assert_eq!(opcode, Opcode::HLT);
+    }
 
-  #[test]
-  fn test_create_instruction() {
-    let instruction = Instruction::new(Opcode::HLT);
-    assert_eq!(instruction.opcode, Opcode::HLT);
-  }
+    #[test]
+    fn test_create_instruction() {
+        let instruction = Instruction::new(Opcode::HLT);
+        assert_eq!(instruction.opcode, Opcode::HLT);
+    }
 
-  #[test]
-fn test_str_to_opcode() {
-    let opcode = Opcode::from(CompleteStr("load"));
-    assert_eq!(opcode, Opcode::LOAD);
-    let opcode = Opcode::from(CompleteStr("illegal"));
-    assert_eq!(opcode, Opcode::IGL);
-}
+    #[test]
+    fn test_str_to_opcode() {
+        let opcode = Opcode::from(CompleteStr("load"));
+        assert_eq!(opcode, Opcode::LOAD);
+        let opcode = Opcode::from(CompleteStr("illegal"));
+        assert_eq!(opcode, Opcode::IGL);
+    }
 }
