@@ -97,6 +97,10 @@ impl AssemblerInstruction {
             }
         }
 
+        while results.len() < 4 {
+            results.push(0);
+        }
+
         return results;
     }
 

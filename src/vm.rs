@@ -25,7 +25,7 @@ impl VM {
     pub fn run(&mut self) {
         let mut is_done = false;
         while !is_done {
-            is_done = !self.execute_instruction();
+            is_done = self.execute_instruction();
         }
     }
 
@@ -40,7 +40,7 @@ impl VM {
 
     fn execute_instruction(&mut self) -> bool {
         if self.pc >= self.program.len() {
-            return false;
+            return true;
         }
         match self.decode_opcode() {
             Opcode::JEQ => {
@@ -109,11 +109,17 @@ impl VM {
                 let register2 = self.registers[self.next_8_bits() as usize];
                 self.registers[self.next_8_bits() as usize] = register1 + register2;
             },
+            Opcode::INC => {
+                self.registers[self.next_8_bits() as usize] += 1;
+            },
             Opcode::SUB => {
                 let register1 = self.registers[self.next_8_bits() as usize];
                 let register2 = self.registers[self.next_8_bits() as usize];
                 self.registers[self.next_8_bits() as usize] = register1 - register2;
             },
+            Opcode::DEC => {
+                self.registers[self.next_8_bits() as usize] -= 1;
+            }
             Opcode::MUL => {
                 let register1 = self.registers[self.next_8_bits() as usize];
                 let register2 = self.registers[self.next_8_bits() as usize];
@@ -132,14 +138,14 @@ impl VM {
             },
             Opcode::HLT => {
                 println!("HLT encountered");
-                return false;
+                return true;
             },
             Opcode::IGL => {
                 println!("Illegal instruction encountered");
-                return false;
+                return true;
             }
         }
-        true
+        false
     }
 
     fn decode_opcode(&mut self) -> Opcode {
@@ -339,5 +345,23 @@ mod tests {
         test_vm.program = vec![16, 0, 0, 0];
         test_vm.run_once();
         assert_eq!(test_vm.heap.len(), 1024);
+    }
+
+    #[test]
+    fn test_inc_opcode() {
+        let mut test_vm = VM::get_test_vm();
+        test_vm.registers[0] = 1024;
+        test_vm.program = vec![17, 0, 0, 0];
+        test_vm.run_once();
+        assert_eq!(test_vm.registers[0], 1025);
+    }
+
+    #[test]
+    fn test_dec_opcode() {
+        let mut test_vm = VM::get_test_vm();
+        test_vm.registers[0] = 1024;
+        test_vm.program = vec![18, 0, 0, 0];
+        test_vm.run_once();
+        assert_eq!(test_vm.registers[0], 1023);
     }
 }
