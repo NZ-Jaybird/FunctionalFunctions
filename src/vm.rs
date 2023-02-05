@@ -38,6 +38,10 @@ impl VM {
         self.program.push(b);
     }
 
+    pub fn clear_program(&mut self) {
+        self.program.clear();
+    }
+
     fn execute_instruction(&mut self) -> bool {
         if self.pc >= self.program.len() {
             return true;

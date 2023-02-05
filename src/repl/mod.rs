@@ -1,10 +1,15 @@
-use crate::vm::VM;
 use std;
+use std::fs::File;
 use std::io;
+use std::io::Read;
 use std::io::Write;
 use std::num::ParseIntError;
+use std::path::Path;
+
 use nom::types::CompleteStr;
+
 use crate::assembler::program_parsers::*;
+use crate::vm::VM;
 
 /// Core structure for the REPL for the Assembler
 pub struct REPL {
@@ -84,6 +89,31 @@ impl REPL {
                     for command in &self.command_buffer {
                         println!("{}", command);
                     }
+                }
+                ".clear" => {
+                    self.vm.clear_program();
+                }
+                ".load_file" => {
+                    print!("Please enter the path to the file you wish to load: ");
+                    io::stdout().flush().expect("Unable to flush stdout");
+                    let mut tmp = String::new();
+                    stdin.read_line(&mut tmp).expect("Unable to read line from user");
+                    let tmp = tmp.trim();
+                    let filename = Path::new(&tmp);
+                    let mut f = File::open(Path::new(&filename)).expect("File not found");
+                    let mut contents = String::new();
+                    f.read_to_string(&mut contents).expect("There was an error reading from the file");
+                    let program = match program(CompleteStr(&contents)) {
+                        // Rusts pattern matching is pretty powerful an can even be nested
+                        Ok((_remainder, program)) => {
+                            program
+                        },
+                        Err(e) => {
+                            println!("Unable to parse input: {:?}", e);
+                            continue;
+                        }
+                    };
+                    self.vm.program.append(&mut program.to_bytes());
                 }
                 _ => {
                     let parsed_program = program(CompleteStr(buffer));

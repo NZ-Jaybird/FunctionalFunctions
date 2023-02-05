@@ -2,15 +2,19 @@ use crate::assembler::Token;
 use crate::assembler::opcode_parsers::*;
 use crate::assembler::operand_parsers::integer_operand;
 use crate::assembler::register_parsers::register;
+use crate::assembler::operand_parsers::operand;
+use crate::assembler::directive_parsers::directive;
 use nom::types::CompleteStr;
 use nom::multispace;
 
 #[derive(Debug, PartialEq)]
 pub struct AssemblerInstruction {
-    opcode: Token,
-    operand1: Option<Token>,
-    operand2: Option<Token>,
-    operand3: Option<Token>,
+    pub opcode: Option<Token>,
+    pub label: Option<Token>,
+    pub directive: Option<Token>,
+    pub operand1: Option<Token>,
+    pub operand2: Option<Token>,
+    pub operand3: Option<Token>,
 }
 
 // Handles instructions of the following form:
@@ -22,7 +26,9 @@ named!(instruction_one<CompleteStr, AssemblerInstruction>,
         i: integer_operand >>
         (
             AssemblerInstruction{
-                opcode: o,
+                opcode: Some(o),
+                directive: None,
+                label: None,
                 operand1: Some(r),
                 operand2: Some(i),
                 operand3: None
@@ -37,7 +43,9 @@ named!(instruction_two<CompleteStr, AssemblerInstruction>,
         opt!(multispace) >>
         (
             AssemblerInstruction{
-                opcode: o,
+                opcode: Some(o),
+                directive: None,
+                label: None,
                 operand1: None,
                 operand2: None,
                 operand3: None,
@@ -54,7 +62,9 @@ named!(instruction_three<CompleteStr, AssemblerInstruction>,
         r3: register >>
         (
             AssemblerInstruction{
-                opcode: o,
+                opcode: Some(o),
+                directive: None,
+                label: None,
                 operand1: Some(r1),
                 operand2: Some(r2),
                 operand3: Some(r3)
@@ -67,12 +77,31 @@ named!(instruction_three<CompleteStr, AssemblerInstruction>,
 named!(pub instruction<CompleteStr, AssemblerInstruction>,
     do_parse!(
         ins: alt!(
-            instruction_one |
-            instruction_two |
-            instruction_three
+            instruction_combined |
+            directive
         ) >>
         (
             ins
+        )
+    )
+);
+
+named!(instruction_combined<CompleteStr, AssemblerInstruction>,
+    do_parse!(
+        // l: opt!(label_declaration) >>
+        o: opcode >>
+        o1: opt!(operand) >>
+        o2: opt!(operand) >>
+        o3: opt!(operand) >>
+        (
+            AssemblerInstruction{
+                opcode: Some(o),
+                label: None, // l
+                directive: None,
+                operand1: o1,
+                operand2: o2,
+                operand3: o3,
+            }
         )
     )
 );
@@ -81,7 +110,7 @@ impl AssemblerInstruction {
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut results = vec![];
         match self.opcode {
-            Token::Op { code } => {
+            Some(Token::Op { code }) => {
                 results.push(code as u8);
             },
             _ => {
@@ -137,7 +166,9 @@ mod tests {
             Ok((
                 CompleteStr(""),
                 AssemblerInstruction {
-                    opcode: Token::Op { code: Opcode::LOAD },
+                    opcode: Some(Token::Op { code: Opcode::LOAD }),
+                    directive: None,
+                    label: None,
                     operand1: Some(Token::Register { reg_num: 0 }),
                     operand2: Some(Token::Number { value: 100 }),
                     operand3: None
@@ -154,7 +185,9 @@ mod tests {
             Ok((
                 CompleteStr(""),
                 AssemblerInstruction {
-                    opcode: Token::Op { code: Opcode::HLT },
+                    opcode: Some(Token::Op { code: Opcode::HLT }),
+                    directive: None,
+                    label: None,
                     operand1: None,
                     operand2: None,
                     operand3: None
@@ -171,7 +204,9 @@ mod tests {
             Ok((
                 CompleteStr(""),
                 AssemblerInstruction {
-                    opcode: Token::Op { code: Opcode::ADD },
+                    opcode: Some(Token::Op { code: Opcode::ADD }),
+                    directive: None,
+                    label: None,
                     operand1: Some(Token::Register { reg_num: 0 }),
                     operand2: Some(Token::Register { reg_num: 1 }),
                     operand3: Some(Token::Register { reg_num: 2 })
