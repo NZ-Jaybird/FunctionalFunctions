@@ -38,6 +38,10 @@ impl VM {
         self.program.push(b);
     }
 
+    pub fn add_bytes(&mut self, program: &mut Vec<u8>) {
+        self.program.append(program)
+    }
+
     pub fn clear_program(&mut self) {
         self.program.clear();
     }

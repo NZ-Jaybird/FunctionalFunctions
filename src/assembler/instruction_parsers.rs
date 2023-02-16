@@ -4,6 +4,8 @@ use crate::assembler::operand_parsers::integer_operand;
 use crate::assembler::register_parsers::register;
 use crate::assembler::operand_parsers::operand;
 use crate::assembler::directive_parsers::directive;
+use crate::assembler::label_parsers::label_declaration;
+use crate::assembler::SymbolTable;
 use nom::types::CompleteStr;
 use nom::multispace;
 
@@ -88,7 +90,7 @@ named!(pub instruction<CompleteStr, AssemblerInstruction>,
 
 named!(instruction_combined<CompleteStr, AssemblerInstruction>,
     do_parse!(
-        // l: opt!(label_declaration) >>
+        l: opt!(label_declaration) >>
         o: opcode >>
         o1: opt!(operand) >>
         o2: opt!(operand) >>
@@ -96,7 +98,7 @@ named!(instruction_combined<CompleteStr, AssemblerInstruction>,
         (
             AssemblerInstruction{
                 opcode: Some(o),
-                label: None, // l
+                label: l,
                 directive: None,
                 operand1: o1,
                 operand2: o2,
@@ -107,7 +109,7 @@ named!(instruction_combined<CompleteStr, AssemblerInstruction>,
 );
 
 impl AssemblerInstruction {
-    pub fn to_bytes(&self) -> Vec<u8> {
+    pub fn to_bytes(&self, symbols: &SymbolTable) -> Vec<u8> {
         let mut results = vec![];
         match self.opcode {
             Some(Token::Op { code }) => {
@@ -121,7 +123,7 @@ impl AssemblerInstruction {
 
         for operand in vec![&self.operand1, &self.operand2, &self.operand3] {
             match operand {
-                Some(t) => AssemblerInstruction::extract_operand(t, &mut results),
+                Some(t) => AssemblerInstruction::extract_operand(t, symbols, &mut results),
                 None => {}
             }
         }
@@ -133,23 +135,42 @@ impl AssemblerInstruction {
         return results;
     }
 
-    fn extract_operand(t: &Token, results: &mut Vec<u8>) {
-    match t {
-        Token::Register { reg_num } => {
-            results.push(*reg_num);
-        }
-        Token::Number { value } => {
-            let converted = *value as u16;
-            let byte1 = converted;
-            let byte2 = converted >> 8;
-            results.push(byte2 as u8);
-            results.push(byte1 as u8);
-        }
-        _ => {
-            println!("Opcode found in operand field");
-            std::process::exit(1);
-        }
-    };
+    pub fn is_label(&self) -> bool {
+        self.label != None
+    }
+
+    pub fn label_name(&self) -> Option<String> {
+        match &self.label {
+            Some(Token::LabelDeclaration { name }) => {
+                return Some(name.clone());
+            },
+            _ => {
+                return None
+            }
+        };
+    }
+
+    fn extract_operand(t: &Token, symbols: &SymbolTable, results: &mut Vec<u8>) {
+        match t {
+            Token::Register { reg_num } => {
+                results.push(*reg_num);
+            }
+            Token::Number { value } => {
+                let converted = *value as u16;
+                let byte1 = converted;
+                let byte2 = converted >> 8;
+                results.push(byte2 as u8);
+                results.push(byte1 as u8);
+            }
+            Token::LabelUsage { name } => {
+                let offset = symbols.symbol_value(name);
+                results.push(offset);
+            }
+            _ => {
+                println!("Opcode found in operand field");
+                std::process::exit(1);
+            }
+        };
     }
 }
 

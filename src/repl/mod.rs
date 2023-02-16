@@ -9,6 +9,7 @@ use std::path::Path;
 use nom::types::CompleteStr;
 
 use crate::assembler::program_parsers::*;
+use crate::assembler::SymbolTable;
 use crate::vm::VM;
 
 /// Core structure for the REPL for the Assembler
@@ -113,13 +114,15 @@ impl REPL {
                             continue;
                         }
                     };
-                    self.vm.program.append(&mut program.to_bytes());
+                    let symbols = SymbolTable::new();
+                    self.vm.program.append(&mut program.to_bytes(&symbols));
                 }
                 _ => {
                     let parsed_program = program(CompleteStr(buffer));
                     if parsed_program.is_ok() {
                         let (_, result) = parsed_program.unwrap();
-                        let bytecode = result.to_bytes();
+                        let symbols = SymbolTable::new();
+                        let bytecode = result.to_bytes(&symbols);
                         // TODO: Make a function to let us add bytes to the VM
                         for byte in bytecode {
                             self.vm.add_byte(byte);
