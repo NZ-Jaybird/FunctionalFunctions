@@ -8,6 +8,8 @@ use std::path::Path;
 
 use nom::types::CompleteStr;
 
+use crate::assembler::PIE_HEADER_LENGTH;
+use crate::assembler::PIE_HEADER_PREFIX;
 use crate::assembler::program_parsers::*;
 use crate::assembler::SymbolTable;
 use crate::vm::VM;
@@ -22,10 +24,24 @@ pub struct REPL {
 impl REPL {
     /// Creates and returns a new assembly REPL
     pub fn new() -> REPL {
+        let mut repl_vm = VM::new();
+        repl_vm.program = Self::prepend_header(vec![]);
         REPL {
-            vm: VM::new(),
+            vm: repl_vm,
             command_buffer: vec![],
         }
+    }
+
+    fn prepend_header(mut b: Vec<u8>) -> Vec<u8> {
+        let mut prepension = vec![];
+        for byte in PIE_HEADER_PREFIX.iter() {
+            prepension.push(byte.clone());
+        }
+        while prepension.len() < PIE_HEADER_LENGTH {
+            prepension.push(0);
+        }
+        prepension.append(&mut b);
+        prepension
     }
 
     fn parse_hex(&mut self, i: &str) -> Result<Vec<u8>, ParseIntError> {
@@ -121,6 +137,7 @@ impl REPL {
                     let parsed_program = program(CompleteStr(buffer));
                     if parsed_program.is_ok() {
                         let (_, result) = parsed_program.unwrap();
+                        println!("{:?}", result);
                         let symbols = SymbolTable::new();
                         let bytecode = result.to_bytes(&symbols);
                         // TODO: Make a function to let us add bytes to the VM
