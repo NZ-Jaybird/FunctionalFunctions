@@ -64,7 +64,7 @@ impl Assembler {
             if i.is_label() {
                 match i.label_name() {
                     Some(name) => {
-                        let symbol = Symbol::new(name, SymbolType::Label, c);
+                        let symbol = Symbol::new(name, /*SymbolType::Label,*/ c);
                         self.symbols.add_symbol(symbol);
                     },
                     None => {}
@@ -93,21 +93,22 @@ pub enum Token {
     Number{value: i32},
     LabelDeclaration { name: String },
     LabelUsage { name: String },
-    Directive { name: String }
+    Directive { name: String },
+    IrString { literal: String }
 }
 
 #[derive(Debug)]
 pub struct Symbol {
     name: String,
     offset: u8,
-    symbol_type: SymbolType,
+    // symbol_type: SymbolType,
 }
 
 impl Symbol {
-    pub fn new(name: String, symbol_type: SymbolType, offset: u8) -> Symbol {
+    pub fn new(name: String, /*symbol_type: SymbolType,*/ offset: u8) -> Symbol {
         Symbol{
             name,
-            symbol_type,
+            // symbol_type,
             offset
         }
     }
@@ -153,24 +154,31 @@ pub mod program_parsers;
 pub mod directive_parsers;
 pub mod label_parsers;
 
-#[test]
-fn test_symbol_table() {
-    let mut sym = SymbolTable::new();
-    let new_symbol = Symbol::new("test".to_string(), SymbolType::Label, 12);
-    sym.add_symbol(new_symbol);
-    assert_eq!(sym.symbols.len(), 1);
-    let v = sym.symbol_value("test");
-    assert_eq!(v, 12);
-}
+#[cfg(test)]
+mod tests {
 
-#[test]
-fn test_assemble_program() {
-    let mut asm = Assembler::new();
-    let test_string = "load $0 #100\nload $0 #100\nload $2 #0\ntest: inc $0\nneq $0 $2\njmpe @test\nhlt";
-    let mut program = asm.assemble(test_string).unwrap();
-    println!("{:?}", program);
-    let mut vm = VM::new();
-    assert_eq!(program.len(), PIE_HEADER_LENGTH + 28);
-    vm.add_bytes(&mut program);
-    assert_eq!(vm.program.len(), PIE_HEADER_LENGTH + 28);
+    use super::*;
+    use crate::vm::VM;
+    
+    #[test]
+    fn test_symbol_table() {
+        let mut sym = SymbolTable::new();
+        let new_symbol = Symbol::new("test".to_string(), /*SymbolType::Label,*/ 12);
+        sym.add_symbol(new_symbol);
+        assert_eq!(sym.symbols.len(), 1);
+        let v = sym.symbol_value("test");
+        assert_eq!(v, 12);
+    }
+
+    #[test]
+    fn test_assemble_program() {
+        let mut asm = Assembler::new();
+        let test_string = "load $0 #100\nload $0 #100\nload $2 #0\ntest: inc $0\nneq $0 $2\njmpe @test\nhlt";
+        let mut program = asm.assemble(test_string).unwrap();
+        println!("{:?}", program);
+        let mut vm = VM::new();
+        assert_eq!(program.len(), PIE_HEADER_LENGTH + 28);
+        vm.add_bytes(&mut program);
+        assert_eq!(vm.program.len(), PIE_HEADER_LENGTH + 28);
+    }
 }

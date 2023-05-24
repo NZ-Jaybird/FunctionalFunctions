@@ -23,7 +23,19 @@ named!(pub operand<CompleteStr, Token>,
     alt!(
         integer_operand |
         register |
-        label_usage
+        label_usage |
+        irstring
+    )
+);
+
+named!(irstring<CompleteStr, Token>,
+    do_parse!(
+        tag!("'") >>
+        content: take_until!("'") >>
+        tag!("'") >>
+        (
+            Token::IrString{ literal: content.to_string() }
+        )
     )
 );
 
@@ -41,4 +53,10 @@ fn test_parse_integer_operand() {
     // Test an invalid one (missing the #)
     let result = integer_operand(CompleteStr("10"));
     assert_eq!(result.is_ok(), false);
+}
+
+#[test]
+fn test_parse_string_operand() {
+    let result = irstring(CompleteStr("'This is a test'"));
+    assert_eq!(result.is_ok(), true);
 }

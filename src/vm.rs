@@ -1,5 +1,4 @@
 use crate::instruction::Opcode;
-use crate::assembler::PIE_HEADER_PREFIX;
 use crate::assembler::PIE_HEADER_LENGTH;
 
 pub struct VM {
@@ -187,17 +186,18 @@ impl VM {
         test_vm
     }
 
-    fn verify_header(&self) -> bool {
-        if self.program[0..4] != PIE_HEADER_PREFIX {
-            return false;
-        }
-        true
-    }
+    // fn verify_header(&self) -> bool {
+    //     if self.program[0..4] != PIE_HEADER_PREFIX {
+    //         return false;
+    //     }
+    //     true
+    // }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::assembler::PIE_HEADER_PREFIX;
 
     fn prepend_header(mut b: Vec<u8>) -> Vec<u8> {
         let mut prepension = vec![];
