@@ -169,6 +169,10 @@ impl REPL {
             }
         }
     }
+
+    pub fn get_register(&self, index: usize) -> i32 {
+        return self.vm.registers[index];
+    }
 }
 
 pub mod system_operations;
@@ -195,5 +199,6 @@ impl SystemOperations for TestSystemOperations {
 #[test]
 fn test_main_loop() {
     let mut repl = REPL::new();
-    repl.run_once(&mut TestSystemOperations::new("add #1 3"));
+    repl.run_once(&mut TestSystemOperations::new("load $0 #3"));
+    assert_eq!(repl.get_register(0), 3);
 }

@@ -3,9 +3,7 @@ use std::io::Stdin;
 
 pub trait SystemOperations {
     fn request_input(&mut self) {}
-
-    #[allow(unused_variables)]
-    fn read_line(&self, buffer: &mut String) {}
+    fn read_line(&self, buffer: &mut String);
 }
 
 pub struct SystemOperationsImpl {
