@@ -26,12 +26,12 @@ fn main() {
             let mut vm = vm::VM::new();
             let program = asm.assemble(&program);
             match program {
-                Some(mut p) => {
+                Ok(mut p) => {
                     vm.add_bytes(&mut p);
                     vm.run();
                     std::process::exit(0);
                 },
-                None => {}
+                Err(..) => {}
             }
         },
         None => {

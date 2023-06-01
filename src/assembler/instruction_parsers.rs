@@ -139,6 +139,14 @@ impl AssemblerInstruction {
         self.label != None
     }
 
+    pub fn is_directive(&self) -> bool {
+        self.directive != None
+    }
+
+    pub fn is_opcode(&self) -> bool {
+        self.opcode != None
+    }
+
     pub fn label_name(&self) -> Option<String> {
         match &self.label {
             Some(Token::LabelDeclaration { name }) => {
@@ -148,6 +156,37 @@ impl AssemblerInstruction {
                 return None
             }
         };
+    }
+
+    pub fn get_string_constant(&self) -> Option<String> {
+        match &self.operand1 {
+            Some(token) => {
+                match token {
+                    Token::IrString { literal } => { Some(literal.to_string()) },
+                    _ => { None }
+                }
+            }
+            None => { None }
+        }
+    }
+
+    pub fn has_operands(&self) -> bool {
+        return match self.operand1 {
+            Some(..) => { true },
+            None => { false }
+        }
+    }
+
+    pub fn get_directive_name(&self) -> Option<String> {
+        match &self.directive {
+            Some(token) => { 
+                match token {
+                    Token::Directive { name } => { Some(name.to_string()) },
+                    _ => { None }
+                }
+            },
+            None => { None }
+        }
     }
 
     fn extract_operand(t: &Token, symbols: &SymbolTable, results: &mut Vec<u8>) {
